@@ -8,7 +8,7 @@ import * as middy from 'middy';
 import { cors } from 'middy/middlewares';
 
 
-const docClient = new AWS.DynamoDB.DocumentClient();
+const docClient = new AWS.DynamoDB.DocumentClient({ convertEmptyValues: true });
 const todosTable = process.env.TODOS_TABLE;
 
 export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {

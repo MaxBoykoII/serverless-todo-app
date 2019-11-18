@@ -5,7 +5,7 @@ import * as uuid from 'uuid';
 import { CreateTodoRequest } from '../../requests/CreateTodoRequest';
 import { TodoItem } from '../../models/TodoItem';
 
-const docClient = new AWS.DynamoDB.DocumentClient();
+const docClient = new AWS.DynamoDB.DocumentClient({ convertEmptyValues: true });
 const todosTable = process.env.TODOS_TABLE;
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
@@ -23,7 +23,8 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
   await docClient.put({
     TableName: todosTable,
-    Item: newTodo
+    Item: newTodo,
+
   }).promise();
 
   // TODO: Implement creating a new TODO item
