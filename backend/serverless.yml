@@ -18,6 +18,7 @@ provider:
     TODOS_TABLE: TODOS-${self:provider.stage}
     TODOS_S3_BUCKET: serverless-todo-app-attachments-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
+    JWKS_URL: https://dev-e490yw5n.auth0.com/.well-known/jwks.json
 
   iamRoleStatements:
     - Effect: Allow

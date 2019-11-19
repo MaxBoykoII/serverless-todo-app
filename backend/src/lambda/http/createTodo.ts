@@ -6,6 +6,7 @@ import * as middy from 'middy';
 import { cors } from 'middy/middlewares';
 import { CreateTodoRequest } from '../../requests/CreateTodoRequest';
 import { TodoItem } from '../../models/TodoItem';
+import { getToken, parseUserId } from '../../auth/utils';
 
 const docClient = new AWS.DynamoDB.DocumentClient({ convertEmptyValues: true });
 const todosTable = process.env.TODOS_TABLE;
@@ -15,10 +16,12 @@ export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGat
   const todoId = uuid.v4();
   const payload: CreateTodoRequest = JSON.parse(event.body);
   const createdAt = Date.now().toString();
+  const token = getToken(event.headers.Authorization);
+  const userId = parseUserId(token);
   const newTodo: TodoItem = {
     todoId,
     createdAt,
-    userId: null,
+    userId,
     done: false,
     ...payload
   };
