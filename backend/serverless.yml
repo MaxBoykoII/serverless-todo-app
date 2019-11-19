@@ -19,6 +19,7 @@ provider:
     TODOS_S3_BUCKET: serverless-todo-app-attachments-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
     JWKS_URL: https://dev-e490yw5n.auth0.com/.well-known/jwks.json
+    USER_ID_INDEX: UserIdIndex
 
   iamRoleStatements:
     - Effect: Allow
@@ -27,7 +28,12 @@ provider:
         - dynamodb:PutItem
         - dynamodb:DeleteItem
         - dynamodb:UpdateItem
+        - dynamodb:Query
       Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+      Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}/index/${self:provider.environment.USER_ID_INDEX}
     - Effect: Allow
       Action: 
         - s3:PutObject
@@ -119,9 +125,18 @@ resources:
         AttributeDefinitions:
           - AttributeName: todoId
             AttributeType: S
+          - AttributeName: userId
+            AttributeType: S
         KeySchema:
           - AttributeName: todoId
             KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: ${self:provider.environment.USER_ID_INDEX}
+            KeySchema:
+              - AttributeName: userId
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
         BillingMode: PAY_PER_REQUEST
         TableName: ${self:provider.environment.TODOS_TABLE}
     
@@ -143,7 +158,6 @@ resources:
                 - DELETE
                 - HEAD
               MaxAge: 3000
-    
     BucketPolicy:
       Type: AWS::S3::BucketPolicy
       Properties:
