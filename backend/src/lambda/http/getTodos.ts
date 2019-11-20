@@ -1,31 +1,20 @@
 import 'source-map-support/register';
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import * as AWS from 'aws-sdk';
 import * as middy from 'middy';
 import { cors } from 'middy/middlewares';
-import { getToken, parseUserId } from '../../auth/utils';
+import { getToken } from '../../auth/utils';
+import { getTodos } from '../../businessLogic/todo';
+import { createLogger } from '../../utils/logger';
 
-const docClient = new AWS.DynamoDB.DocumentClient();
-
-const todosTable = process.env.TODOS_TABLE;
-const userIdIndex = process.env.USER_ID_INDEX;
+const logger = createLogger('GetTodos');
 
 export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  // TODO: Get all TODO items for a current user
-  console.log('processing event:', event);
-  const token = getToken(event.headers.Authorization);
-  const userId = parseUserId(token);
-  console.log('parsed user id:', userId);
-  const result = await docClient.query({
-    TableName: todosTable,
-    IndexName: userIdIndex,
-    KeyConditionExpression: 'userId = :userId',
-    ExpressionAttributeValues: {
-      ':userId': userId
-    }
-  }).promise();
+  logger.info('Processing event:', { event });
 
-  const items = result.Items;
+  const jwtToken = getToken(event.headers.Authorization);
+  const items = await getTodos(jwtToken);
+
+  logger.info('Returning items:', { items });
 
   return {
     statusCode: 200,
